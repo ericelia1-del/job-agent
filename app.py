@@ -403,11 +403,20 @@ with tab_search:
 
     if user_input:
         with st.spinner("Fetching latest jobs from the web…"):
-            subprocess.run(["python3", os.path.join(BASE_DIR, "main.py")], cwd=BASE_DIR, check=False)
+            try:
+                import sys
+                sys.path.insert(0, BASE_DIR)
+                import main as job_fetcher
+                import importlib
+                importlib.reload(job_fetcher)
+                job_fetcher.main()
+            except Exception as e:
+                st.error(f"Error fetching jobs: {e}")
+                st.stop()
 
         csv_path = os.path.join(BASE_DIR, "remote_jobs.csv")
         if not os.path.exists(csv_path):
-            st.error("remote_jobs.csv not found. Check that main.py ran correctly.")
+            st.error("Could not fetch jobs. Please try again.")
             st.stop()
 
         raw_df     = pd.read_csv(csv_path)

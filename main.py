@@ -7,7 +7,7 @@ import requests
 import feedparser
 import pandas as pd
 
-OUTPUT_CSV = "remote_jobs.csv"
+OUTPUT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "remote_jobs.csv")
 
 SEARCH_TERMS = [
     "account executive",
