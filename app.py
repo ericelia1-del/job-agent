@@ -553,31 +553,63 @@ tab_search, tab_tracker, tab_interview = st.tabs(["🔍 Find Jobs", "📁 Job Tr
 # TAB 1 — FIND JOBS
 # ══════════════════════════════════════════════
 with tab_search:
-    user_input = st.text_input(
-        "What job are you looking for?",
-        placeholder="e.g. VP of Sales, director of sales, account executive, fintech",
+
+    st.markdown("### 👤 Searching based on your profile")
+    st.caption(
+        f"**{MY_PROFILE['name']}** · {MY_PROFILE['background_summary'][:180]}…"
     )
 
-    if user_input:
-        with st.spinner("Fetching latest jobs from the web…"):
-            try:
-                import sys
-                sys.path.insert(0, BASE_DIR)
-                import main as job_fetcher
-                import importlib
-                importlib.reload(job_fetcher)
-                job_fetcher.main()
-            except Exception as e:
-                st.error(f"Error fetching jobs: {e}")
-                st.stop()
+    # Optional keyword override
+    with st.expander("🔧 Override: search by keyword instead"):
+        keyword_override = st.text_input(
+            "Custom search keyword",
+            placeholder="e.g. VP of Sales, Head of Revenue, fintech director",
+        )
+
+    # Auto-generate search query from profile
+    def build_auto_query():
+        titles  = " OR ".join(MY_PROFILE["strong_titles"][:6])
+        industries = " ".join(MY_PROFILE["target_industries"][:4])
+        return f"{titles} {industries} remote"
+
+    user_input = keyword_override.strip() if keyword_override.strip() else build_auto_query()
+
+    col_search, col_clear = st.columns([2, 1])
+    with col_search:
+        search_clicked = st.button(
+            "🔍 Find Jobs For Me",
+            type="primary",
+            use_container_width=True,
+        )
+    with col_clear:
+        if st.button("🗑️ Clear results", use_container_width=True):
+            for k in ["job_results", "selected_job", "bullets", "outreach",
+                      "cover_letter", "follow_up", "interview_prep"]:
+                st.session_state.pop(k, None)
+            st.rerun()
+
+    if search_clicked or "job_results" in st.session_state:
+
+        if search_clicked:
+            with st.spinner("🌐 Fetching latest remote jobs…"):
+                try:
+                    import sys
+                    sys.path.insert(0, BASE_DIR)
+                    import main as job_fetcher
+                    import importlib
+                    importlib.reload(job_fetcher)
+                    job_fetcher.main()
+                except Exception as e:
+                    st.error(f"Error fetching jobs: {e}")
+                    st.stop()
 
         csv_path = os.path.join(BASE_DIR, "remote_jobs.csv")
         if not os.path.exists(csv_path):
             st.error("Could not fetch jobs. Please try again.")
             st.stop()
 
-        raw_df     = pd.read_csv(csv_path)
-        scored_df  = score_jobs(raw_df)
+        raw_df      = pd.read_csv(csv_path)
+        scored_df   = score_jobs(raw_df)
         filtered_df = filter_by_query(scored_df, user_input)
         filtered_df = apply_salary_filter(filtered_df, min_salary)
         filtered_df = filtered_df[filtered_df["fit_score"] > 0].head(40)
