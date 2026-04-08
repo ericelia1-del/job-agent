@@ -240,48 +240,53 @@ Eric Elia – sales leader transitioning into tech/SaaS/fintech/AI.
 - Hard pass: insurance, commission-only, door-to-door, 1099 gig, entry-level
 """
 
-    jobs_text = ""
-    for i, j in enumerate(jobs):
-        jobs_text += f"\n--- JOB {i} ---\nTitle: {j.get('title','')}\nCompany: {j.get('company','')}\nDescription: {str(j.get('description', j.get('summary', j.get('details', ''))))[:600]}\n"
+    # Process in batches of 25 to avoid token limits
+    batch_size = 25
+    for batch_start in range(0, len(jobs), batch_size):
+        batch = jobs[batch_start:batch_start + batch_size]
+        batch_text = ""
+        for i, j in enumerate(batch):
+            global_idx = batch_start + i
+            batch_text += f"\n--- JOB {global_idx} ---\nTitle: {j.get('title','')}\nCompany: {j.get('company','')}\nDescription: {str(j.get('description', j.get('summary', j.get('details', ''))))[:600]}\n"
 
-    prompt = f"""You are a recruiter helping Eric Elia find the best-fit remote jobs.
+        batch_prompt = f"""You are a recruiter helping Eric Elia find the best-fit remote jobs.
 
 ERIC'S PROFILE:
 {profile_summary}
 
 JOBS TO EVALUATE (rate each 1–10 for fit):
-{jobs_text}
+{batch_text}
 
-For each job numbered 0 to {len(jobs)-1}, respond with EXACTLY this format (one per line, no extra text):
+For each job numbered {batch_start} to {batch_start + len(batch) - 1}, respond with EXACTLY this format (one per line):
 JOB_INDEX|SCORE|ONE_SENTENCE_REASON
 
 Score 8–10: Strong fit – right title, right industry, right seniority
-Score 5–7: Partial fit – some gaps but worth considering
-Score 1–4: Poor fit – wrong industry, too junior, commission-only, or filtered out
+Score 5–7: Partial fit – some gaps but worth considering  
+Score 1–4: Poor fit – wrong role, too junior, commission-only, or not relevant
 
 Return only the numbered lines. Nothing else."""
 
-    try:
-        response = client.messages.create(
-            model="claude-opus-4-6",
-            max_tokens=1200,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        lines = response.content[0].text.strip().split("\n")
-        for line in lines:
-            parts = line.strip().split("|")
-            if len(parts) == 3:
-                try:
-                    idx = int(parts[0].replace("JOB_", "").strip())
-                    score = int(parts[1].strip())
-                    reason = parts[2].strip()
-                    if 0 <= idx < len(jobs):
-                        jobs[idx]["ai_score"] = score
-                        jobs[idx]["ai_reason"] = reason
-                except ValueError:
-                    pass
-    except Exception as e:
-        st.warning(f"AI filtering error: {e}")
+        try:
+            response = client.messages.create(
+                model="claude-opus-4-6",
+                max_tokens=1500,
+                messages=[{"role": "user", "content": batch_prompt}],
+            )
+            lines = response.content[0].text.strip().split("\n")
+            for line in lines:
+                parts = line.strip().split("|")
+                if len(parts) == 3:
+                    try:
+                        idx = int(parts[0].replace("JOB_", "").strip())
+                        score = int(parts[1].strip())
+                        reason = parts[2].strip()
+                        if 0 <= idx < len(jobs):
+                            jobs[idx]["ai_score"] = score
+                            jobs[idx]["ai_reason"] = reason
+                    except ValueError:
+                        pass
+        except Exception as e:
+            st.warning(f"AI filtering error: {e}")
 
     # Add default for any not scored
     for j in jobs:
@@ -568,8 +573,8 @@ with tab_search:
 
     # Auto-generate search query from profile
     def build_auto_query():
-        titles  = " OR ".join(MY_PROFILE["strong_titles"][:6])
-        industries = " ".join(MY_PROFILE["target_industries"][:4])
+        titles  = " OR ".join(MY_PROFILE["strong_titles"])
+        industries = " ".join(MY_PROFILE["target_industries"])
         return f"{titles} {industries} remote"
 
     user_input = keyword_override.strip() if keyword_override.strip() else build_auto_query()
@@ -610,9 +615,9 @@ with tab_search:
 
         raw_df      = pd.read_csv(csv_path)
         scored_df   = score_jobs(raw_df)
-        filtered_df = filter_by_query(scored_df, user_input)
-        filtered_df = apply_salary_filter(filtered_df, min_salary)
-        filtered_df = filtered_df[filtered_df["fit_score"] > 0].head(40)
+        filtered_df = apply_salary_filter(scored_df, min_salary)
+        # Wide funnel — let Claude do the real filtering
+        filtered_df = filtered_df[filtered_df["fit_score"] >= -5].head(100)
 
         if filtered_df.empty:
             st.warning("No jobs found. Try broader keywords like: sales director, VP sales, revenue")
