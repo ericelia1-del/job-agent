@@ -725,8 +725,8 @@ with tab_search:
                         st.caption(f"💡 {ai_reason}")
 
                 with col_actions:
-                    if url:
-                        st.link_button("🚀 Apply Now", url, use_container_width=True, type="primary")
+                    if url and str(url).startswith("http"):
+                        st.link_button("🚀 Apply Now", str(url), use_container_width=True, type="primary")
                     else:
                         st.markdown("*No link available*")
 
@@ -758,8 +758,8 @@ with tab_search:
 
             st.divider()
             st.subheader(f"🎯 Working on: {sel_title} @ {sel_company}")
-            if sel_url:
-                st.link_button("🚀 Apply Now", sel_url, type="primary")
+            if sel_url and str(sel_url).startswith("http"):
+                st.link_button("🚀 Apply Now", str(sel_url), type="primary")
 
             col_bullets, col_outreach, col_cover, col_follow = st.columns(4)
 
