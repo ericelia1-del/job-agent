@@ -37,20 +37,38 @@ MY_PROFILE = {
         "$2M+ annual gross profit at Courtesy Palm Harbor Honda",
     ],
     "strong_titles": [
+        # Executive / Director level
         "vp of sales", "vp sales", "vice president of sales",
         "director of sales", "sales director", "head of sales",
-        "regional sales manager", "senior account executive",
-        "business development director", "revenue director",
-        "sales manager", "account executive",
-        "business development manager", "customer success manager",
-        "partnerships manager", "revenue operations manager",
-        "growth manager", "new car director",
+        "revenue director", "business development director",
+        "national sales director", "regional director",
+        # Manager level
+        "sales manager", "regional sales manager", "area sales manager",
+        "national sales manager", "general manager", "general sales manager",
+        "district sales manager", "market manager",
+        # Account / BD roles
+        "senior account executive", "enterprise account executive",
+        "strategic account executive", "account executive",
+        "business development manager", "senior business development",
+        # Customer success / partnerships
+        "customer success manager", "director of customer success",
+        "partnerships manager", "channel sales manager",
+        # Revenue / Growth
+        "revenue operations manager", "growth manager",
+        "sales leader", "sales team lead",
     ],
     "seniority_terms": [
-        "director", "vp", "vice president", "head of", "senior", "manager", "lead",
+        "director", "vp", "vice president", "head of", "senior", "manager",
+        "lead", "general manager", "regional", "national", "enterprise",
     ],
     "target_industries": [
+        # Tech
         "saas", "fintech", "ai", "tech", "software", "cloud", "startup",
+        # Other strong fits for Eric's background
+        "automotive", "real estate", "proptech", "insurtech",
+        "healthcare", "logistics", "media", "advertising",
+        "construction", "manufacturing", "distribution",
+        "telecommunications", "energy", "retail",
     ],
     "salary_signals": [
         "$", "ote", "equity", "base salary", "compensation", "k/year", "usd", "salary range",
@@ -228,16 +246,40 @@ def ai_filter_jobs(jobs: list[dict], client) -> list[dict]:
         return jobs
 
     profile_summary = """
-Eric Elia – sales leader transitioning into tech/SaaS/fintech/AI.
+Eric Elia – proven sales leader open to ANY industry where his skills transfer.
+
+EXPERIENCE:
 - 8+ years sales leadership, $5M+ annual gross profit responsibility
 - Currently New Car Director at Top 3 Infiniti dealership in the US (Asbury Automotive)
-- Led teams of 11–17; ranked #1 Sales Manager in PVR across Andy Mohr Group
+- Led teams of 11–17 sales reps; ranked #1 Sales Manager in PVR across Andy Mohr Group
 - Helped earn 2024 Presidents Award (Courtesy Palm Harbor Honda); Circle of Excellence (Infiniti)
 - Marine Corps veteran – Technical Controller / Data Network Specialist
-- Target roles: VP Sales, Director of Sales, Head of Sales, Senior AE, Revenue Director
-- Target industries: SaaS, fintech, AI, tech, software, cloud, startup
-- Remote preferred; open to relocation; Palm Harbor FL
-- Hard pass: insurance, commission-only, door-to-door, 1099 gig, entry-level
+- 98% customer satisfaction score; strong pipeline, KPI, and coaching skills
+- Traveled to 33 countries – strong cross-cultural communication
+
+WHAT HE BRINGS: Team leadership, revenue growth, pipeline management, KPI accountability,
+coaching and developing sales reps, hitting and exceeding quota, consultative selling,
+managing high-volume sales operations, building high-performance teams.
+
+TARGET ROLES (open to all of these):
+- Sales Manager, Regional Sales Manager, Area/District Manager, General Sales Manager
+- Director of Sales, Head of Sales, VP of Sales
+- Senior/Enterprise Account Executive
+- Business Development Manager/Director
+- Customer Success Manager/Director
+- Revenue/Growth roles with team leadership component
+- ANY role where managing a sales team and driving revenue is the core job
+
+TARGET PAY: $100k+ total compensation (base + commission/bonus). Can be in any structure.
+
+OPEN TO ALL INDUSTRIES — not just tech. Automotive, real estate, healthcare, logistics,
+media, construction, manufacturing, SaaS, fintech — anything where sales leadership matters.
+
+HARD PASS ONLY:
+- Commission-only with no base salary
+- Door-to-door / MLM / 1099 gig
+- Pure individual contributor with no leadership component at senior pay
+- Entry level / intern
 """
 
     # Process in batches of 25 to avoid token limits
@@ -260,9 +302,9 @@ JOBS TO EVALUATE (rate each 1–10 for fit):
 For each job numbered {batch_start} to {batch_start + len(batch) - 1}, respond with EXACTLY this format (one per line):
 JOB_INDEX|SCORE|ONE_SENTENCE_REASON
 
-Score 8–10: Strong fit – right title, right industry, right seniority
-Score 5–7: Partial fit – some gaps but worth considering  
-Score 1–4: Poor fit – wrong role, too junior, commission-only, or not relevant
+Score 8–10: Strong fit – requires sales leadership/team management, $100k+ realistic comp, Eric's experience directly applies regardless of industry
+Score 5–7: Partial fit – leadership component exists but may be IC-heavy, industry stretch, or comp unclear
+Score 1–4: Poor fit – no team leadership, commission-only, entry level, or completely wrong function
 
 Return only the numbered lines. Nothing else."""
 
