@@ -59,25 +59,33 @@ def fetch_via_web_search(api_key: str) -> List[Dict[str, Any]]:
 
     search_prompt = """Search for current remote sales leadership job openings that match this candidate:
 
-Eric Elia - 8+ years sales leadership, $5M+ gross profit, led teams of 11-17, 
-Marine Corps veteran, open to all industries, needs $100k+ total comp.
+Eric Elia - 8+ years managing sales teams (up to 17 people), $5M+ annual gross profit,
+proven team leader in high-volume sales environments, Marine Corps veteran.
+Open to ANY industry. Needs $100k+ total comp. Location: Palm Harbor FL, open to relocation.
 
-Target roles: VP Sales, Director of Sales, Sales Manager, Head of Sales, 
-Regional Sales Manager, Senior Account Executive, Business Development Director,
-Customer Success Manager/Director, Enterprise AE, General Sales Manager.
+His transferable skills: team leadership, pipeline management, deal structuring, 
+KPI accountability, coaching/developing sales reps, consultative selling, CRM proficiency,
+process improvement, revenue growth, customer relationship management.
 
-Please search for: "remote sales director job 2025", "remote VP sales job", 
-"remote sales manager $100k", "remote senior account executive SaaS",
-"remote head of sales job", "remote regional sales manager job"
+Search for these roles (any industry): 
+"remote sales manager job", "remote regional sales manager",
+"remote director of sales", "remote general sales manager",
+"remote senior account executive", "remote business development manager",
+"remote customer success manager $100k", "remote sales director",
+"remote area sales manager", "remote district sales manager",
+"remote national sales manager", "remote VP sales",
+"remote head of sales", "sales leadership remote job 2025"
 
 For each job found, extract:
 - Job title
 - Company name  
 - Job URL (direct link to apply)
-- Brief description of the role
+- Brief description (what industry, team size if mentioned, comp if mentioned)
 
 Return results as a JSON array with fields: title, company, url, description
-Return at least 20-30 jobs if possible. Focus on real, current openings with apply links."""
+Find 25-40 jobs. Prioritize roles that involve managing a sales team and have $100k+ realistic earnings.
+Include jobs from automotive, real estate, healthcare, logistics, construction, B2B services,
+financial services, staffing, manufacturing — not just tech."""
 
     try:
         response = client.messages.create(

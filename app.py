@@ -15,74 +15,89 @@ MY_PROFILE = {
     "name": "Eric D. Elia",
     "location": "Palm Harbor, FL (willing to relocate)",
     "background_summary": (
-        "U.S. Marine Corps veteran and sales leader with 8+ years driving multimillion-dollar "
-        "revenue growth. Responsible for $5M+ in annual gross profit across leadership roles. "
-        "Managed teams of up to 17 sales professionals. Ranked #1 Sales Manager in Profit Per "
-        "Vehicle Retail (PVR) across the Andy Mohr Group. Helped earn the 2024 Presidents Award "
-        "at Courtesy Palm Harbor Honda. Qualified Infiniti of Tampa for the Circle of Excellence "
-        "recognition. Currently New Car Director at a Top 3 Infiniti dealership in the US. "
-        "Seeking VP/Director/Head of Sales roles in SaaS, fintech, AI, or tech."
+        "U.S. Marine Corps veteran and sales leader with 8+ years managing high-performing teams "
+        "and driving multimillion-dollar revenue growth. Currently New Car Director at Infiniti of "
+        "Tampa (Top 3 Infiniti dealership in the US). Responsible for $5M+ in annual gross profit "
+        "across leadership roles. Managed teams of up to 17 sales professionals. Ranked #1 Sales "
+        "Manager in PVR across the Andy Mohr Group. Open to sales leadership roles across any industry."
     ),
     "key_achievements": [
-        "$5M+ cumulative annual gross profit responsibility",
-        "Led teams of up to 17 sales professionals",
-        "Ranked #1 Sales Manager in PVR across entire Andy Mohr Group",
-        "Helped earn the 2024 Presidents Award at Courtesy Palm Harbor Honda",
+        "Currently: New Car Director, Infiniti of Tampa — Top 3 Infiniti US, largest in Florida",
         "Qualified Infiniti of Tampa for Circle of Excellence recognition",
-        "Top 3 Infiniti dealership in the US by new car volume",
+        "$5M+ cumulative annual gross profit across leadership roles",
+        "Led teams of 11–17 sales professionals",
+        "Ranked #1 Sales Manager in PVR across entire Andy Mohr Group",
+        "$3M+ annual gross profit as Sales Manager, Andy Mohr Honda (15-person team)",
+        "$2M+ annual gross profit as Sales Manager, Courtesy Palm Harbor Honda (17-person team)",
+        "Helped earn the 2024 Presidents Award at Courtesy Palm Harbor Honda",
         "98% customer satisfaction score as Sales & Leasing Consultant",
-        "Traveled to 33 countries — cross-cultural communication skills",
-        "U.S. Marine Corps veteran — Technical Controller / Data Network Specialist",
-        "$3M+ annual gross profit at Andy Mohr Honda",
-        "$2M+ annual gross profit at Courtesy Palm Harbor Honda",
+        "Implemented standardized sales processes improving team productivity and closing rates",
+        "Traveled to 33 countries — cross-cultural communication and adaptability",
+        "U.S. Marine Corps veteran — Technical Controller / Data Network Specialist (2013–2019)",
+        "Store Manager at GNC — retail sales leadership experience",
+        "Corporal Leadership Course, USMC (2018)",
     ],
     "strong_titles": [
-        # Executive / Director level
-        "vp of sales", "vp sales", "vice president of sales",
+        # Director / VP level
         "director of sales", "sales director", "head of sales",
+        "vp of sales", "vp sales", "vice president of sales",
         "revenue director", "business development director",
-        "national sales director", "regional director",
-        # Manager level
+        "national sales director", "regional director", "area director",
+        # Manager level — core sweet spot
         "sales manager", "regional sales manager", "area sales manager",
-        "national sales manager", "general manager", "general sales manager",
-        "district sales manager", "market manager",
-        # Account / BD roles
+        "district sales manager", "national sales manager",
+        "general sales manager", "general manager",
+        "market manager", "territory manager", "branch manager",
+        # Account executive / BD
         "senior account executive", "enterprise account executive",
         "strategic account executive", "account executive",
         "business development manager", "senior business development",
-        # Customer success / partnerships
+        "account manager", "senior account manager",
+        # Customer success
         "customer success manager", "director of customer success",
-        "partnerships manager", "channel sales manager",
-        # Revenue / Growth
-        "revenue operations manager", "growth manager",
-        "sales leader", "sales team lead",
+        "client success manager", "client relationship manager",
+        # Operations / Revenue
+        "revenue manager", "sales operations manager",
+        "sales leader", "sales team lead", "sales supervisor",
     ],
     "seniority_terms": [
         "director", "vp", "vice president", "head of", "senior", "manager",
-        "lead", "general manager", "regional", "national", "enterprise",
+        "lead", "general manager", "regional", "national", "district", "area",
+        "enterprise", "strategic", "principal",
     ],
     "target_industries": [
-        # Tech
-        "saas", "fintech", "ai", "tech", "software", "cloud", "startup",
-        # Other strong fits for Eric's background
-        "automotive", "real estate", "proptech", "insurtech",
-        "healthcare", "logistics", "media", "advertising",
-        "construction", "manufacturing", "distribution",
-        "telecommunications", "energy", "retail",
+        # Automotive — Eric's proven home turf
+        "automotive", "auto", "dealership", "vehicle", "car",
+        # High-transfer industries — similar sales dynamics
+        "real estate", "mortgage", "home services", "solar", "roofing",
+        "construction", "building", "hvac", "home improvement",
+        "financial services", "wealth management", "banking", "lending",
+        "insurance", "healthcare", "medical", "pharma",
+        "logistics", "freight", "supply chain", "distribution",
+        "staffing", "recruiting", "hr services",
+        "manufacturing", "industrial", "equipment",
+        "telecommunications", "media", "advertising",
+        # Tech is fine too, just not the only target
+        "saas", "fintech", "tech", "software", "cloud",
+        "retail", "wholesale", "b2b", "services",
     ],
     "salary_signals": [
-        "$", "ote", "equity", "base salary", "compensation", "k/year", "usd", "salary range",
+        "$", "ote", "base salary", "compensation", "k/year", "usd",
+        "salary range", "total compensation", "base + commission",
     ],
     "strong_keywords": [
-        "sales", "revenue", "leadership", "account management",
-        "business development", "customer success", "partnerships",
-        "saas", "fintech", "ai", "startup", "remote", "quota",
-        "pipeline", "territory", "forecasting", "kpi", "gross profit",
-        "consultative", "veteran", "coaching", "team building",
+        "sales", "revenue", "leadership", "pipeline", "quota",
+        "team management", "coaching", "performance management",
+        "business development", "account management", "client relations",
+        "forecasting", "kpi", "gross profit", "closing", "negotiation",
+        "consultative", "territory", "customer satisfaction", "retention",
+        "deal structure", "lead generation", "follow-up", "crm",
+        "veteran", "team building", "training", "mentoring",
     ],
     "negative_keywords": [
-        "insurance", "commission-only", "door-to-door",
-        "1099", "unpaid", "intern", "entry level",
+        "commission-only", "100% commission", "1099 only",
+        "door-to-door", "mlm", "pyramid", "final expense",
+        "unpaid", "intern", "internship", "entry level", "no experience",
     ],
 }
 
@@ -246,40 +261,71 @@ def ai_filter_jobs(jobs: list[dict], client) -> list[dict]:
         return jobs
 
     profile_summary = """
-Eric Elia – proven sales leader open to ANY industry where his skills transfer.
+ERIC D. ELIA — Sales Leader, Open to Any Industry
 
-EXPERIENCE:
-- 8+ years sales leadership, $5M+ annual gross profit responsibility
-- Currently New Car Director at Top 3 Infiniti dealership in the US (Asbury Automotive)
-- Led teams of 11–17 sales reps; ranked #1 Sales Manager in PVR across Andy Mohr Group
-- Helped earn 2024 Presidents Award (Courtesy Palm Harbor Honda); Circle of Excellence (Infiniti)
-- Marine Corps veteran – Technical Controller / Data Network Specialist
-- 98% customer satisfaction score; strong pipeline, KPI, and coaching skills
-- Traveled to 33 countries – strong cross-cultural communication
+CURRENT ROLE:
+New Car Director, Infiniti of Tampa (Asbury Automotive Group) — 2025–Present
+- Top 3 Infiniti dealership in the US by new car volume, largest in Florida
+- Leads team of 11 sales professionals
+- Qualified dealership for Infiniti's Circle of Excellence recognition
+- Manages full sales pipeline, forecasting, inventory strategy, deal structure
 
-WHAT HE BRINGS: Team leadership, revenue growth, pipeline management, KPI accountability,
-coaching and developing sales reps, hitting and exceeding quota, consultative selling,
-managing high-volume sales operations, building high-performance teams.
+PRIOR EXPERIENCE:
+Sales Manager, Courtesy Palm Harbor Honda — July 2024–2025
+- $2M+ annual gross profit through negotiation, deal structuring, pipeline management
+- Led 17+ sales associates with coaching, performance management, training
+- Helped earn the 2024 Presidents Award (record new vehicle sales)
+- Improved conversion rates through pipeline optimization and lead follow-up
+- Daily sales meetings, performance reviews, KPI accountability
 
-TARGET ROLES (open to all of these):
-- Sales Manager, Regional Sales Manager, Area/District Manager, General Sales Manager
-- Director of Sales, Head of Sales, VP of Sales
-- Senior/Enterprise Account Executive
-- Business Development Manager/Director
-- Customer Success Manager/Director
-- Revenue/Growth roles with team leadership component
-- ANY role where managing a sales team and driving revenue is the core job
+Sales Manager, Andy Mohr Honda — October 2020–April 2023
+- $3M+ annual gross profit
+- Led 15-person sales team on high-volume customer acquisition
+- Ranked #1 Sales Manager in PVR across the entire Andy Mohr Group
+- Implemented standardized sales processes improving productivity and close rates
+- CRM: VinSolutions, Eleads, Tekion, vAuto, Dealertrack, RouteOne, CDK Global
 
-TARGET PAY: $100k+ total compensation (base + commission/bonus). Can be in any structure.
+Sales & Leasing Consultant, Andy Mohr Hyundai — July 2017–October 2020
+- 98% customer satisfaction score
+- Highest Front-End and Back-End PVR in the dealership
+- Mentored junior sales staff on negotiation and closing
 
-OPEN TO ALL INDUSTRIES — not just tech. Automotive, real estate, healthcare, logistics,
-media, construction, manufacturing, SaaS, fintech — anything where sales leadership matters.
+Store Manager, GNC — June 2016–July 2017
+- Retail sales leadership, consultative selling, inventory management
+
+US Marine Corps, Technical Controller / Data Network Specialist — May 2013–May 2019
+- Leadership, discipline, mission-critical operations, mentoring
+
+WHAT HE BRINGS:
+Team leadership (up to 17 people), revenue responsibility ($5M+ annual gross profit),
+pipeline management, deal structuring, consultative selling, KPI accountability,
+coaching and developing sales reps, process improvement, CRM proficiency,
+high-volume operations management, customer relationship management.
+
+WHAT HE'S LOOKING FOR:
+ANY sales leadership or senior sales role where managing a team and driving revenue
+is the core job. Open to ALL industries — his automotive background proves he can
+lead a team, hit numbers, and build culture in any high-stakes sales environment.
+He does NOT need a tech background to succeed — leadership and revenue skills transfer.
+
+REALISTIC TARGET ROLES: Sales Manager, Regional Sales Manager, Area/District Manager,
+Director of Sales, Head of Sales, VP Sales, Senior Account Executive, Business
+Development Manager/Director, Customer Success Manager/Director, General Sales Manager,
+National Sales Manager, Territory Manager, Branch Manager.
+
+INDUSTRIES HE'D EXCEL IN: Automotive, real estate, mortgage, home services (solar, HVAC,
+roofing), construction, financial services, healthcare, logistics, staffing/recruiting,
+manufacturing, B2B services, insurance (base salary structure), SaaS/tech (if leadership
+focused), retail, telecommunications, media/advertising — ANYTHING with a sales team.
+
+COMPENSATION: Needs $100k+ total compensation (base + variable). Open to various
+structures as long as total realistic earnings are $100k+.
 
 HARD PASS ONLY:
-- Commission-only with no base salary
-- Door-to-door / MLM / 1099 gig
-- Pure individual contributor with no leadership component at senior pay
-- Entry level / intern
+- Commission-only with zero base salary
+- Door-to-door / MLM / pyramid schemes / 1099-only gig roles
+- Purely individual contributor roles with no leadership component
+- Entry level / intern / no experience required
 """
 
     # Process in batches of 25 to avoid token limits
@@ -302,9 +348,9 @@ JOBS TO EVALUATE (rate each 1–10 for fit):
 For each job numbered {batch_start} to {batch_start + len(batch) - 1}, respond with EXACTLY this format (one per line):
 JOB_INDEX|SCORE|ONE_SENTENCE_REASON
 
-Score 8–10: Strong fit – requires sales leadership/team management, $100k+ realistic comp, Eric's experience directly applies regardless of industry
-Score 5–7: Partial fit – leadership component exists but may be IC-heavy, industry stretch, or comp unclear
-Score 1–4: Poor fit – no team leadership, commission-only, entry level, or completely wrong function
+Score 8–10: Strong fit — requires managing a sales team OR senior sales role with $100k+ realistic comp; Eric's leadership, revenue, and people management skills directly apply; ANY industry is fine
+Score 5–7: Partial fit — some leadership component but may be mostly individual contributor, comp unclear, or requires highly specialized industry knowledge Eric doesn't have
+Score 1–4: Poor fit — no team management, commission-only/MLM/door-to-door, entry level, or completely unrelated function (engineering, marketing, finance, etc.)
 
 Return only the numbered lines. Nothing else."""
 
@@ -349,19 +395,33 @@ Company: {company}
 Job Description excerpt:
 {description[:1500] if description else "Not provided"}
 
-ERIC'S REAL BACKGROUND & ACHIEVEMENTS (use these specific facts):
-- U.S. Marine Corps veteran — Technical Controller / Data Network Specialist (2013–2019)
-- 8+ years of sales leadership experience
-- $5M+ cumulative annual gross profit responsibility across leadership roles
-- Currently: New Car Director at Infiniti of Tampa (Asbury Automotive Group) — Top 3 Infiniti dealership in the US by new car volume, largest in Florida
-- Led team of 11 sales professionals at Infiniti of Tampa; qualified dealership for Circle of Excellence
-- Previously: Sales Manager at Courtesy Palm Harbor Honda — generated $2M+ annual gross profit, led 17+ associates, helped earn the 2024 Presidents Award
-- Previously: Sales Manager at Andy Mohr Honda — generated $3M+ annual gross profit, led 15-person team, ranked #1 Sales Manager in Profit Per Vehicle Retail (PVR) across entire Andy Mohr Group
-- Improved conversion rates by optimizing sales pipeline and lead follow-up processes
-- Conducted daily sales meetings and performance reviews focused on KPI accountability
-- 98% customer satisfaction score as Sales & Leasing Consultant
-- Traveled to 33 countries — strong cross-cultural communication and adaptability
-- CRM experience: VinSolutions, Eleads, Tekion, Dealertrack, RouteOne, vAuto, CDK Global
+ERIC'S REAL BACKGROUND (use ONLY these specific facts — no fabrication):
+CURRENT: New Car Director, Infiniti of Tampa (Asbury Automotive) 2025–Present
+- Top 3 Infiniti dealership in US by new car volume, largest in Florida
+- Leads team of 11 sales professionals
+- Qualified dealership for Circle of Excellence recognition
+- Manages pipeline, forecasting, inventory strategy, deal structure
+
+PREVIOUS: Sales Manager, Courtesy Palm Harbor Honda July 2024–2025
+- $2M+ annual gross profit through negotiation, deal structuring, pipeline management
+- Led 17+ sales associates — coaching, performance management, daily meetings
+- Helped earn the 2024 Presidents Award (record new vehicle sales)
+- Improved conversion rates through pipeline and lead follow-up optimization
+
+PREVIOUS: Sales Manager, Andy Mohr Honda Oct 2020–Apr 2023
+- $3M+ annual gross profit — led 15-person sales team
+- Ranked #1 Sales Manager in PVR across entire Andy Mohr Group
+- Implemented standardized sales processes improving productivity and close rates
+- CRM: VinSolutions, Eleads, Tekion, Dealertrack, vAuto, RouteOne, CDK Global
+
+PREVIOUS: Sales & Leasing Consultant, Andy Mohr Hyundai July 2017–Oct 2020
+- 98% customer satisfaction score
+- Highest Front-End and Back-End PVR in dealership
+- Mentored junior sales staff on negotiation and closing
+
+OTHER: Store Manager, GNC (2016–2017) | USMC Technical Controller (2013–2019)
+- 33 countries traveled — cross-cultural communication
+- Corporal Leadership Course, USMC
 
 Rules for the bullets:
 - Start each with a strong action verb (Drove, Led, Grew, Exceeded, Launched, Built, Scaled, etc.)
