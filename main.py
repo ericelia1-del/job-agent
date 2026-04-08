@@ -1,6 +1,13 @@
+"""
+main.py — Job fetcher using Anthropic web search + RSS fallback
+Searches the real web (LinkedIn, Indeed, company sites) for sales leadership roles
+matching Eric's background. Falls back to RSS feeds as supplementary sources.
+"""
+
 import os
 import json
-from datetime import datetime
+import re
+import time
 from typing import List, Dict, Any
 
 import requests
@@ -9,41 +16,190 @@ import pandas as pd
 
 OUTPUT_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "remote_jobs.csv")
 
-SEARCH_TERMS = [
-    # Leadership titles
-    "sales manager", "regional sales manager", "area sales manager",
-    "district sales manager", "national sales manager", "general sales manager",
-    "director of sales", "sales director", "head of sales",
-    "vp of sales", "vp sales", "vice president sales",
-    "revenue director", "business development director",
-    # AE / BD roles
-    "senior account executive", "enterprise account executive",
-    "strategic account executive", "account executive",
-    "business development manager", "senior business development",
-    # Customer success / partnerships
-    "customer success manager", "director of customer success",
-    "partnerships manager", "channel sales manager",
-    # General
-    "sales leader", "revenue manager", "growth manager",
-    "remote sales", "team lead sales",
-]
-
-GOOD_TERMS = [
-    "remote", "sales", "revenue", "leadership", "customer success",
-    "account executive", "business development", "partnerships",
-    "manager", "director", "team leadership", "coaching",
-    "hiring", "growth", "saas", "fintech", "quota", "pipeline",
-    "forecasting", "kpi", "consultative", "territory",
+ERIC_SEARCH_QUERIES = [
+    "site:linkedin.com/jobs VP Sales remote 2025",
+    "site:linkedin.com/jobs Director of Sales remote",
+    "site:linkedin.com/jobs Sales Manager remote $100k",
+    "site:linkedin.com/jobs Senior Account Executive remote SaaS",
+    "site:indeed.com VP of Sales remote job",
+    "site:indeed.com Director Sales remote full time",
+    "site:indeed.com Regional Sales Manager remote",
+    "site:indeed.com Sales Director remote $100000",
+    "site:glassdoor.com VP Sales remote job 2025",
+    "site:glassdoor.com Director of Sales remote",
+    "remote VP Sales job 2025 apply",
+    "remote Director of Sales job 2025 apply",
+    "remote Sales Manager $120k job 2025",
+    "remote enterprise account executive $100k 2025",
+    "remote head of sales SaaS job 2025",
+    "remote general sales manager job 2025",
+    "remote regional sales manager job apply 2025",
+    "remote business development director job 2025",
+    "remote customer success director $100k 2025",
+    "remote senior account executive B2B 2025",
 ]
 
 BAD_TERMS = [
-    "insurance", "commission only", "door to door",
-    "1099 only", "mlm", "final expense", "licensed insurance",
-    "entry level", "internship", "unpaid",
+    "commission only", "commission-only", "door to door", "door-to-door",
+    "1099 only", "mlm", "pyramid", "final expense", "insurance agent",
+    "entry level", "internship", "unpaid", "no experience required",
 ]
 
 
-# ── Sources ──────────────────────────────────────────────────────
+# ── Web Search via Anthropic ──────────────────────────────────────
+
+def fetch_via_web_search(api_key: str) -> List[Dict[str, Any]]:
+    """Use Claude with web_search tool to find real job listings."""
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=api_key)
+    jobs = []
+
+    print("  Searching the web for jobs via Claude...")
+
+    search_prompt = """Search for current remote sales leadership job openings that match this candidate:
+
+Eric Elia - 8+ years sales leadership, $5M+ gross profit, led teams of 11-17, 
+Marine Corps veteran, open to all industries, needs $100k+ total comp.
+
+Target roles: VP Sales, Director of Sales, Sales Manager, Head of Sales, 
+Regional Sales Manager, Senior Account Executive, Business Development Director,
+Customer Success Manager/Director, Enterprise AE, General Sales Manager.
+
+Please search for: "remote sales director job 2025", "remote VP sales job", 
+"remote sales manager $100k", "remote senior account executive SaaS",
+"remote head of sales job", "remote regional sales manager job"
+
+For each job found, extract:
+- Job title
+- Company name  
+- Job URL (direct link to apply)
+- Brief description of the role
+
+Return results as a JSON array with fields: title, company, url, description
+Return at least 20-30 jobs if possible. Focus on real, current openings with apply links."""
+
+    try:
+        response = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=4000,
+            tools=[{"type": "web_search_20250305", "name": "web_search"}],
+            messages=[{"role": "user", "content": search_prompt}],
+        )
+
+        # Extract text from response
+        full_text = ""
+        for block in response.content:
+            if hasattr(block, "text"):
+                full_text += block.text
+
+        # Try to parse JSON from the response
+        json_match = re.search(r'\[[\s\S]*\]', full_text)
+        if json_match:
+            try:
+                parsed = json.loads(json_match.group())
+                for item in parsed:
+                    if isinstance(item, dict) and item.get("title"):
+                        jobs.append({
+                            "source": "Web Search",
+                            "title": item.get("title", ""),
+                            "company": item.get("company", "") or "Unknown",
+                            "location": "Remote",
+                            "url": item.get("url", "") or item.get("link", ""),
+                            "published": "",
+                            "description": item.get("description", "") or item.get("summary", ""),
+                        })
+            except json.JSONDecodeError:
+                pass
+
+        # Also extract any job-like patterns from raw text if JSON parse failed
+        if not jobs:
+            lines = full_text.split("\n")
+            current_job = {}
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    if current_job.get("title"):
+                        jobs.append({
+                            "source": "Web Search",
+                            "title": current_job.get("title", ""),
+                            "company": current_job.get("company", "Unknown"),
+                            "location": "Remote",
+                            "url": current_job.get("url", ""),
+                            "published": "",
+                            "description": current_job.get("description", ""),
+                        })
+                    current_job = {}
+                elif "title" in line.lower() and ":" in line:
+                    current_job["title"] = line.split(":", 1)[-1].strip().strip('"')
+                elif "company" in line.lower() and ":" in line:
+                    current_job["company"] = line.split(":", 1)[-1].strip().strip('"')
+                elif "url" in line.lower() and ":" in line:
+                    url_part = line.split(":", 1)[-1].strip().strip('"')
+                    if url_part.startswith("http"):
+                        current_job["url"] = url_part
+                elif "description" in line.lower() and ":" in line:
+                    current_job["description"] = line.split(":", 1)[-1].strip().strip('"')
+
+        print(f"    Found {len(jobs)} jobs via web search")
+
+    except Exception as e:
+        print(f"  Web search error: {e}")
+
+    return jobs
+
+
+# ── RSS Fallback Sources ──────────────────────────────────────────
+
+def fetch_remotive() -> List[Dict[str, Any]]:
+    jobs = []
+    try:
+        for cat in ["sales", "business-development", "management-finance"]:
+            r = requests.get(
+                f"https://remotive.com/api/remote-jobs?category={cat}&limit=100",
+                timeout=20,
+            )
+            r.raise_for_status()
+            for item in r.json().get("jobs", []):
+                jobs.append({
+                    "source": "Remotive",
+                    "title": item.get("title", ""),
+                    "company": item.get("company_name", "") or "Unknown",
+                    "location": item.get("candidate_required_location", "Remote"),
+                    "url": item.get("url", ""),
+                    "published": item.get("publication_date", ""),
+                    "description": item.get("description", "") or "",
+                    "salary": item.get("salary", ""),
+                })
+    except Exception as e:
+        print(f"  Remotive error: {e}")
+    return jobs
+
+
+def fetch_jobicy() -> List[Dict[str, Any]]:
+    jobs = []
+    try:
+        for industry in ["sales", "management"]:
+            r = requests.get(
+                f"https://jobicy.com/api/v2/remote-jobs?count=100&industry={industry}",
+                timeout=20,
+            )
+            r.raise_for_status()
+            for item in r.json().get("jobs", []):
+                jobs.append({
+                    "source": "Jobicy",
+                    "title": item.get("jobTitle", ""),
+                    "company": item.get("companyName", "") or "Unknown",
+                    "location": "Remote",
+                    "url": item.get("url", ""),
+                    "published": item.get("pubDate", ""),
+                    "description": item.get("jobDescription", "") or "",
+                    "salary": item.get("annualSalaryMin", ""),
+                })
+    except Exception as e:
+        print(f"  Jobicy error: {e}")
+    return jobs
+
 
 def fetch_we_work_remotely() -> List[Dict[str, Any]]:
     jobs = []
@@ -60,7 +216,7 @@ def fetch_we_work_remotely() -> List[Dict[str, Any]]:
                 "description": entry.get("summary", ""),
             })
     except Exception as e:
-        print(f"We Work Remotely error: {e}")
+        print(f"  WWR error: {e}")
     return jobs
 
 
@@ -73,16 +229,12 @@ def fetch_remoteok() -> List[Dict[str, Any]]:
             timeout=20,
         )
         r.raise_for_status()
-        data = r.json()
-        for item in data:
-            if not isinstance(item, dict):
-                continue
-            title = item.get("position", "")
-            if not title:
+        for item in r.json():
+            if not isinstance(item, dict) or not item.get("position"):
                 continue
             jobs.append({
                 "source": "Remote OK",
-                "title": title,
+                "title": item.get("position", ""),
                 "company": item.get("company", "") or "Unknown",
                 "location": item.get("location", "") or "Remote",
                 "url": item.get("url", ""),
@@ -90,100 +242,22 @@ def fetch_remoteok() -> List[Dict[str, Any]]:
                 "description": item.get("description", "") or "",
             })
     except Exception as e:
-        print(f"Remote OK error: {e}")
-    return jobs
-
-
-def fetch_remotive() -> List[Dict[str, Any]]:
-    jobs = []
-    try:
-        categories = ["sales", "business-development", "management-finance"]
-        for cat in categories:
-            r = requests.get(
-                f"https://remotive.com/api/remote-jobs?category={cat}&limit=50",
-                timeout=20,
-            )
-            r.raise_for_status()
-            data = r.json().get("jobs", [])
-            for item in data:
-                jobs.append({
-                    "source": "Remotive",
-                    "title": item.get("title", ""),
-                    "company": item.get("company_name", "") or "Unknown",
-                    "location": item.get("candidate_required_location", "Remote"),
-                    "url": item.get("url", ""),
-                    "published": item.get("publication_date", ""),
-                    "description": item.get("description", "") or "",
-                    "salary": item.get("salary", ""),
-                })
-    except Exception as e:
-        print(f"Remotive error: {e}")
-    return jobs
-
-
-def fetch_jobicy() -> List[Dict[str, Any]]:
-    jobs = []
-    try:
-        r = requests.get(
-            "https://jobicy.com/api/v2/remote-jobs?count=50&industry=sales",
-            timeout=20,
-        )
-        r.raise_for_status()
-        data = r.json().get("jobs", [])
-        for item in data:
-            jobs.append({
-                "source": "Jobicy",
-                "title": item.get("jobTitle", ""),
-                "company": item.get("companyName", "") or "Unknown",
-                "location": "Remote",
-                "url": item.get("url", ""),
-                "published": item.get("pubDate", ""),
-                "description": item.get("jobDescription", "") or "",
-                "salary": item.get("annualSalaryMin", ""),
-            })
-    except Exception as e:
-        print(f"Jobicy error: {e}")
-    return jobs
-
-
-def fetch_arbeitnow() -> List[Dict[str, Any]]:
-    jobs = []
-    try:
-        r = requests.get(
-            "https://www.arbeitnow.com/api/job-board-api",
-            timeout=20,
-        )
-        r.raise_for_status()
-        data = r.json().get("data", [])
-        for item in data:
-            if not item.get("remote", False):
-                continue
-            jobs.append({
-                "source": "Arbeitnow",
-                "title": item.get("title", ""),
-                "company": item.get("company_name", "") or "Unknown",
-                "location": "Remote",
-                "url": item.get("url", ""),
-                "published": item.get("created_at", ""),
-                "description": item.get("description", "") or "",
-            })
-    except Exception as e:
-        print(f"Arbeitnow error: {e}")
+        print(f"  RemoteOK error: {e}")
     return jobs
 
 
 def fetch_himalayas() -> List[Dict[str, Any]]:
     jobs = []
     try:
-        for role in ["sales-manager", "account-executive", "director-of-sales", "vp-sales"]:
+        for role in ["sales-manager", "account-executive", "director-of-sales",
+                     "vp-sales", "business-development-manager", "customer-success-manager"]:
             r = requests.get(
-                f"https://himalayas.app/jobs/api?role={role}&limit=25",
+                f"https://himalayas.app/jobs/api?role={role}&limit=50",
                 timeout=20,
             )
             if r.status_code != 200:
                 continue
-            data = r.json().get("jobs", [])
-            for item in data:
+            for item in r.json().get("jobs", []):
                 jobs.append({
                     "source": "Himalayas",
                     "title": item.get("title", ""),
@@ -195,188 +269,68 @@ def fetch_himalayas() -> List[Dict[str, Any]]:
                     "salary": item.get("salary", ""),
                 })
     except Exception as e:
-        print(f"Himalayas error: {e}")
+        print(f"  Himalayas error: {e}")
     return jobs
 
 
-def fetch_indeed_rss() -> List[Dict[str, Any]]:
-    """Search Indeed via RSS for targeted role titles."""
-    jobs = []
-    queries = [
-        # Leadership
-        "Sales+Manager+remote+100000",
-        "Regional+Sales+Manager+remote",
-        "Director+of+Sales+remote",
-        "Head+of+Sales+remote",
-        "VP+Sales+remote",
-        "General+Sales+Manager+remote",
-        "National+Sales+Manager+remote",
-        # AE / BD
-        "Senior+Account+Executive+remote",
-        "Enterprise+Account+Executive+remote",
-        "Business+Development+Manager+remote",
-        "Business+Development+Director+remote",
-        # Customer success
-        "Customer+Success+Manager+remote+100000",
-        "Director+Customer+Success+remote",
-        # Industry specific
-        "Sales+Director+SaaS+remote",
-        "Sales+Manager+SaaS+remote",
-        "Sales+Manager+fintech+remote",
-        "Regional+Sales+Manager+healthcare",
-        "Sales+Manager+logistics+remote",
-        "Sales+Director+real+estate+remote",
-        "Account+Executive+enterprise+remote",
-    ]
-    for q in queries:
-        try:
-            url = f"https://www.indeed.com/rss?q={q}&sort=date&fromage=14"
-            feed = feedparser.parse(url)
-            for entry in feed.entries:
-                title = entry.get("title", "")
-                if " - " in title:
-                    parts = title.rsplit(" - ", 1)
-                    job_title = parts[0].strip()
-                    company = parts[1].strip() if len(parts) > 1 else "Unknown"
-                else:
-                    job_title = title
-                    company = "Unknown"
-                jobs.append({
-                    "source": "Indeed",
-                    "title": job_title,
-                    "company": company,
-                    "location": "Remote",
-                    "url": entry.get("link", ""),
-                    "published": entry.get("published", ""),
-                    "description": entry.get("summary", ""),
-                })
-        except Exception as e:
-            print(f"Indeed RSS error ({q}): {e}")
-    return jobs
+# ── Scoring & Dedup ───────────────────────────────────────────────
 
+GOOD_TERMS = [
+    "sales", "revenue", "leadership", "director", "manager", "vp",
+    "account executive", "business development", "customer success",
+    "quota", "pipeline", "territory", "saas", "remote", "b2b",
+    "team", "coaching", "fintech", "enterprise", "strategic",
+]
 
-def fetch_linkedin_rss() -> List[Dict[str, Any]]:
-    """Fetch LinkedIn job RSS feeds for targeted searches."""
-    jobs = []
-    searches = [
-        ("VP Sales", "102571732"),       # United States geoId
-        ("Director of Sales", "102571732"),
-        ("Head of Sales remote", "102571732"),
-        ("Sales Director SaaS", "102571732"),
-        ("Enterprise Account Executive", "102571732"),
-    ]
-    for keywords, geo in searches:
-        try:
-            kw = keywords.replace(" ", "%20")
-            url = f"https://www.linkedin.com/jobs/search/?keywords={kw}&location=Remote&f_WT=2&f_TPR=r604800&position=1&pageNum=0"
-            # LinkedIn RSS feed
-            rss_url = f"https://www.linkedin.com/jobs/search/?keywords={kw}&f_WT=2&f_TPR=r604800"
-            r = requests.get(
-                rss_url,
-                headers={"User-Agent": "Mozilla/5.0 (compatible; RSS reader)"},
-                timeout=15,
-            )
-            feed = feedparser.parse(r.content)
-            for entry in feed.entries:
-                jobs.append({
-                    "source": "LinkedIn",
-                    "title": entry.get("title", ""),
-                    "company": entry.get("author", "") or "Unknown",
-                    "location": "Remote",
-                    "url": entry.get("link", ""),
-                    "published": entry.get("published", ""),
-                    "description": entry.get("summary", ""),
-                })
-        except Exception as e:
-            print(f"LinkedIn RSS error ({keywords}): {e}")
-    return jobs
-
-
-def fetch_otta() -> List[Dict[str, Any]]:
-    """Fetch from Otta (tech-focused job board)."""
-    jobs = []
-    try:
-        r = requests.get(
-            "https://api.otta.com/graphql",
-            json={"query": '{ jobs(filters: {remote: true, functionIds: ["sales"]}) { edges { node { title company { name } externalUrl } } } }'},
-            timeout=15,
-        )
-        if r.status_code == 200:
-            edges = r.json().get("data", {}).get("jobs", {}).get("edges", [])
-            for edge in edges:
-                node = edge.get("node", {})
-                jobs.append({
-                    "source": "Otta",
-                    "title": node.get("title", ""),
-                    "company": node.get("company", {}).get("name", "") or "Unknown",
-                    "location": "Remote",
-                    "url": node.get("externalUrl", ""),
-                    "published": "",
-                    "description": "",
-                })
-    except Exception as e:
-        print(f"Otta error: {e}")
-    return jobs
-
-
-# ── Scoring & Filtering ───────────────────────────────────────────
+SEARCH_TERMS = [
+    "vp of sales", "vp sales", "director of sales", "sales director",
+    "head of sales", "sales manager", "regional sales manager",
+    "senior account executive", "business development director",
+    "customer success manager", "account executive", "revenue director",
+    "enterprise sales", "general sales manager", "national sales manager",
+]
 
 def score_job(job: Dict[str, Any]) -> int:
     text = " ".join([
-        job.get("title", ""),
-        job.get("company", ""),
-        job.get("location", ""),
+        job.get("title", ""), job.get("company", ""),
         job.get("description", ""),
     ]).lower()
-
-    score = 0
-    for term in GOOD_TERMS:
-        if term in text:
-            score += 2
-    for term in SEARCH_TERMS:
-        if term in text:
-            score += 3
-    for term in BAD_TERMS:
-        if term in text:
-            score -= 4
-    if "remote" in text:
-        score += 2
+    score = sum(2 for t in GOOD_TERMS if t in text)
+    score += sum(3 for t in SEARCH_TERMS if t in text)
+    score -= sum(5 for t in BAD_TERMS if t in text)
     return max(score, 0)
-
-
-def is_relevant(job: Dict[str, Any]) -> bool:
-    text = f"{job.get('title', '')} {job.get('description', '')}".lower()
-    return any(term in text for term in SEARCH_TERMS)
 
 
 def dedupe(jobs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     seen = set()
-    cleaned = []
+    out = []
     for job in jobs:
         key = (
-            job.get("title", "").strip().lower(),
-            job.get("company", "").strip().lower(),
-            job.get("url", "").strip().lower(),
+            job.get("title", "").strip().lower()[:60],
+            job.get("company", "").strip().lower()[:40],
         )
-        if key in seen:
-            continue
-        seen.add(key)
-        cleaned.append(job)
-    return cleaned
+        if key not in seen:
+            seen.add(key)
+            out.append(job)
+    return out
 
+
+# ── Main ─────────────────────────────────────────────────────────
 
 def main():
     print("Fetching jobs from all sources...")
     jobs = []
 
-    prev = 0
-    jobs.extend(fetch_we_work_remotely())
-    print(f"  We Work Remotely: {len(jobs) - prev} jobs")
+    # Primary: web search (requires API key in env)
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if api_key:
+        web_jobs = fetch_via_web_search(api_key)
+        jobs.extend(web_jobs)
+        print(f"  Web search total: {len(web_jobs)} jobs")
+    else:
+        print("  No ANTHROPIC_API_KEY — skipping web search")
 
-    prev = len(jobs)
-    jobs.extend(fetch_remoteok())
-    print(f"  Remote OK: {len(jobs) - prev} jobs")
-
+    # Supplementary RSS/API sources
     prev = len(jobs)
     jobs.extend(fetch_remotive())
     print(f"  Remotive: {len(jobs) - prev} jobs")
@@ -386,43 +340,38 @@ def main():
     print(f"  Jobicy: {len(jobs) - prev} jobs")
 
     prev = len(jobs)
-    jobs.extend(fetch_arbeitnow())
-    print(f"  Arbeitnow: {len(jobs) - prev} jobs")
-
-    prev = len(jobs)
     jobs.extend(fetch_himalayas())
     print(f"  Himalayas: {len(jobs) - prev} jobs")
 
     prev = len(jobs)
-    jobs.extend(fetch_indeed_rss())
-    print(f"  Indeed RSS: {len(jobs) - prev} jobs")
+    jobs.extend(fetch_we_work_remotely())
+    print(f"  We Work Remotely: {len(jobs) - prev} jobs")
 
     prev = len(jobs)
-    jobs.extend(fetch_linkedin_rss())
-    print(f"  LinkedIn RSS: {len(jobs) - prev} jobs")
+    jobs.extend(fetch_remoteok())
+    print(f"  Remote OK: {len(jobs) - prev} jobs")
 
     jobs = dedupe(jobs)
     print(f"\nTotal unique jobs: {len(jobs)}")
 
-    # Score everything — exclude only hard negatives, let Claude do real filtering
+    # Score and filter — only remove hard negatives
     ranked = []
     for job in jobs:
         job["score"] = score_job(job)
         text = f"{job.get('title','').lower()} {job.get('description','').lower()}"
-        is_bad = any(t in text for t in BAD_TERMS)
-        if not is_bad:
+        if not any(t in text for t in BAD_TERMS):
             ranked.append(job)
 
     ranked = sorted(ranked, key=lambda x: x["score"], reverse=True)
 
     df = pd.DataFrame(ranked)
     df.to_csv(OUTPUT_CSV, index=False)
-
     print(f"Saved {len(ranked)} jobs to {OUTPUT_CSV}")
+
     print("\nTop 10:")
-    for i, job in enumerate(ranked[:10], start=1):
-        print(f"{i}. [{job.get('source')}] {job.get('title')} | {job.get('company')} | score={job.get('score', 0)}")
-        print(f"   {job.get('url', '')}")
+    for i, job in enumerate(ranked[:10], 1):
+        print(f"{i}. [{job.get('source')}] {job.get('title')} @ {job.get('company')} | score={job.get('score',0)}")
+        print(f"   {job.get('url','')}")
 
 
 if __name__ == "__main__":

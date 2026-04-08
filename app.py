@@ -638,9 +638,13 @@ with tab_search:
     if search_clicked or "job_results" in st.session_state:
 
         if search_clicked:
-            with st.spinner("🌐 Fetching latest remote jobs…"):
+            with st.spinner("🌐 Searching the web for jobs matching your background…"):
                 try:
                     import sys
+                    # Pass API key to main.py via environment
+                    api_key = st.session_state.get("anthropic_api_key", "").strip() or os.getenv("ANTHROPIC_API_KEY", "")
+                    if api_key:
+                        os.environ["ANTHROPIC_API_KEY"] = api_key
                     sys.path.insert(0, BASE_DIR)
                     import main as job_fetcher
                     import importlib
