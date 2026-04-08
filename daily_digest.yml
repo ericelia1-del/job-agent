@@ -1,0 +1,32 @@
+name: Daily Job Digest
+
+on:
+  schedule:
+    # 7:00 AM Eastern Time (11:00 UTC) every day
+    - cron: "0 11 * * *"
+  workflow_dispatch: # allow manual trigger from GitHub UI
+
+jobs:
+  send-daily-jobs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install anthropic pandas requests feedparser
+
+      - name: Run daily job digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python send_daily_jobs.py
